@@ -16,7 +16,10 @@ class TextSuggestion:
             raise Exception(f'TypeError: unsupported type {type(text)}. Try str or list instead')
         
         words, probs = self.word_completor.get_words_and_probs(word_to_complete)
-        rec_completion = words[np.argmax(probs)]
+        if len(probs) > 1:
+            rec_completion = words[np.argmax(probs)]
+        else:
+            rec_completion = ''
         
         return rec_completion
     
@@ -28,8 +31,8 @@ class TextSuggestion:
             
             for i in range(n_words):
                 words, probs = self.n_gram_model.get_next_words_and_probs(text)
-                top_popular = words[np.argmax(probs)]
-                rec_words.append(top_popular)
+                top_popular = np.take(words, np.argsort(probs)[-3:])
+                rec_words.extend(top_popular.tolist())
                 text = rec_words[-2:]
             
         return rec_words
