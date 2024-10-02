@@ -1,3 +1,7 @@
+"""
+Модуль обработки корпуса из email-ов
+"""
+
 import pandas as pd
 import re, tqdm
 
