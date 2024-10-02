@@ -1,3 +1,7 @@
+"""
+TODO doc
+"""
+
 from typing import List, Union
 import numpy as np
 
@@ -21,7 +25,6 @@ class TextSuggestion:
             if len(probs) > 1:
                 top_popular = np.take(words, np.argsort(probs)[-3:])
                 rec_completion.extend(top_popular.tolist())
-                # top_completion = 
             else:
                 rec_completion = ''
         else:
@@ -33,7 +36,7 @@ class TextSuggestion:
         
         rec_words = [text[-1]]
         
-        if method == 'max_proba': # beam search for later implementaion
+        if method == 'max_proba':
             
             for i in range(n_words):
                 words, probs = self.n_gram_model.get_next_words_and_probs(text)
@@ -45,7 +48,7 @@ class TextSuggestion:
     
     def suggest_text(self, text: Union[str, list], n_words=3, n_texts=1, is_space=False) -> list[list[str]]:
         """
-        Возвращает возможные варианты продолжения текста (по умолчанию только один)
+        Возвращает возможные варианты продолжения текста
         
         text: строка или список слов – написанный пользователем текст
         n_words: число слов, которые дописывает n-граммная модель
@@ -55,7 +58,6 @@ class TextSuggestion:
         Первое слово – это то, которое WordCompletor дополнил до целого.
         """        
         rec_completion = self._get_word_completion(text, flg=is_space)
-        # text[-1] = rec_completion
         
         suggestions = []
         
