@@ -6,8 +6,9 @@ class TextSuggestion:
         self.word_completor = word_completor
         self.n_gram_model = n_gram_model
 
-    def _get_word_completion(self, text: Union[str, list]) -> str:
+    def _get_word_completion(self, text: Union[str, list], flg=False) -> str:
         
+        rec_completion = []
         if isinstance(text, list):
             word_to_complete = text[-1]
         elif isinstance(text, str):
@@ -15,9 +16,14 @@ class TextSuggestion:
         else:
             raise Exception(f'TypeError: unsupported type {type(text)}. Try str or list instead')
         
-        words, probs = self.word_completor.get_words_and_probs(word_to_complete)
-        if len(probs) > 1:
-            rec_completion = words[np.argmax(probs)]
+        if not flg:
+            words, probs = self.word_completor.get_words_and_probs(word_to_complete)
+            if len(probs) > 1:
+                top_popular = np.take(words, np.argsort(probs)[-3:])
+                rec_completion.extend(top_popular.tolist())
+                # top_completion = 
+            else:
+                rec_completion = ''
         else:
             rec_completion = ''
         
@@ -37,7 +43,7 @@ class TextSuggestion:
             
         return rec_words
     
-    def suggest_text(self, text: Union[str, list], n_words=3, n_texts=1) -> list[list[str]]:
+    def suggest_text(self, text: Union[str, list], n_words=3, n_texts=1, is_space=False) -> list[list[str]]:
         """
         Возвращает возможные варианты продолжения текста (по умолчанию только один)
         
@@ -48,12 +54,15 @@ class TextSuggestion:
         return: list[list[srt]] – список из n_texts списков слов, по 1 + n_words слов в каждом
         Первое слово – это то, которое WordCompletor дополнил до целого.
         """        
-        rec_completion = self._get_word_completion(text)
-        text[-1] = rec_completion
+        rec_completion = self._get_word_completion(text, flg=is_space)
+        # text[-1] = rec_completion
         
         suggestions = []
         
-        rec_words = self._get_recommendations(text[-2:], n_words) 
-        suggestions.append(rec_words)
+        if not is_space:
+            suggestions.append(rec_completion)
+        else:
+            rec_words = self._get_recommendations(text[-2:], n_words) 
+            suggestions.append(rec_words)
 
         return suggestions

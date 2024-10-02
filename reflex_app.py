@@ -23,7 +23,7 @@ print('загрузка данных...')
 emails = pd.read_csv('reflex_app\emails.csv')
 # готовим корпус email-ов
 print('готовим email-s...')
-em_processor = EmailProcessoR(emails, 100000)
+em_processor = EmailProcessoR(emails, 250000)
 print('создаем word_completor и префиксное дерево...')
 word_completor = WordCompletor(em_processor.corpus_em)
 print('инициализация N-граммной модели...')
@@ -37,12 +37,14 @@ class State(rx.State):
 
     def update_suggestions(self):
         if self.input_text:
+            end_flag = True if self.input_text.endswith(' ') else False
+            # end_flag = False
             words = self.input_text.split()
             if len(words) > 1:
                 last_word = words[-1]
-                suggestions = text_suggestion.suggest_text(words, n_words=1, n_texts=1)
+                suggestions = text_suggestion.suggest_text(words, n_words=1, n_texts=1, is_space=end_flag)
                 self.suggestions = suggestions[0] if suggestions else []
-                self.suggestions = [_ for _ in self.suggestions if _ != last_word] 
+                self.suggestions = [_ for _ in self.suggestions if _ != last_word]
             else:
                 self.suggestions = []
         else:
@@ -53,26 +55,16 @@ class State(rx.State):
         self.update_suggestions()
 
     def append_suggestion(self, suggestion: str):
-        last_word = self.input_text.split()[-1]
-        if (self.suggestions[0] == suggestion) & (suggestion.find(last_word) != -1):
+        end_flag = True if self.input_text.endswith(' ') else False
+        if not end_flag:
             self.input_text = self.input_text.split()
             self.input_text[-1] = suggestion + " "
             self.input_text = " ".join(self.input_text)
         else:
             self.input_text += " " + suggestion
-        self.input_text = re.sub(r'\s{2,}', ' ', self.input_text.strip())
+        # self.input_text = re.sub(r'\s{2,}', ' ', self.input_text.strip())
+        self.input_text = re.sub(r'\s{2,}', ' ', self.input_text) + " "
         self.update_suggestions()
-        
-        # self.input_text = rx.cond(
-        #     self.suggestions[0] == suggestion,
-        #     rx.cond(
-        #         rx.contains(self.input_text, " "),
-        #         rx.concat(self.input_text.rsplit(" ", 1)[0], " ", suggestion, " "),
-        #         rx.concat(suggestion, " ")
-        #     ),
-        #     rx.concat(self.input_text, " ", suggestion)
-        # )
-        # self.update_suggestions()
         
 
     def send_message(self):
@@ -88,7 +80,11 @@ def index():
     return rx.box(
         rx.color_mode.button(position='top-right'),
         rx.vstack(
-            rx.heading("Text Suggestion App", font_weight="bold", font_size="2xl", text_align="center"),
+            rx.vstack(
+                rx.heading("Text Suggestion App", font_weight="bold", font_size="2xl", text_align="center"),
+                rx.text("powered by @mkurchenko ⚡", font_size="sm", color="gray.500", text_align="center"),
+                spacing="0.5em"
+            ),
             rx.vstack(
                 rx.foreach(
                     State.chat_messages,
