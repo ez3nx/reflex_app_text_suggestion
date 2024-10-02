@@ -63,7 +63,6 @@ class State(rx.State):
             self.input_text = " ".join(self.input_text)
         else:
             self.input_text += " " + suggestion
-        # self.input_text = re.sub(r'\s{2,}', ' ', self.input_text.strip())
         self.input_text = re.sub(r'\s{2,}', ' ', self.input_text) + " "
         self.update_suggestions()
         
