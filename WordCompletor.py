@@ -31,7 +31,7 @@ class WordCompletor:
     def get_words_and_probs(self, prefix: str) -> Union[List[str], List[float]]:
         """
         Возвращает список слов, начинающихся на prefix,
-        с их вероятностями (нормировать ничего не нужно)
+        с их вероятностями
         """
         words, probs = [], []
         words = self.prefix_tree.search_prefix(prefix)
